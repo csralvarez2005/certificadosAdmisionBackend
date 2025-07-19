@@ -20,8 +20,8 @@ public class EstudianteController {
         this.estudianteService = estudianteService;
     }
 
-    @GetMapping("/nivel-formacion/2")
-    public List<EstudianteDto> obtenerEstudiantesNivelFormacionDos() {
-        return estudianteService.obtenerEstudiantesNivelFormacionDos();
+    @GetMapping("/todos")
+    public List<EstudianteDto> obtenerTodosLosEstudiantes() {
+        return estudianteService.obtenerTodosLosEstudiantes();
     }
 }

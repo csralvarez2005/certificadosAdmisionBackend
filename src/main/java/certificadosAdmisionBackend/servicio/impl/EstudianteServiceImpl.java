@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
 @Service
 public class EstudianteServiceImpl implements EstudianteService {
 
@@ -19,7 +18,16 @@ public class EstudianteServiceImpl implements EstudianteService {
     }
 
     @Override
-    public List<EstudianteDto> obtenerEstudiantesNivelFormacionDos() {
-        return estudianteRepository.buscarEstudiantesConNivelFormacionDos();
+    public List<EstudianteDto> obtenerTodosLosEstudiantes() {
+        List<Object[]> resultados = estudianteRepository.buscarTodosLosEstudiantes();
+        return resultados.stream()
+                .map(obj -> new EstudianteDto(
+                        (String) obj[0], // estudiante
+                        (String) obj[1], // codigo
+                        (String) obj[2], // email
+                        (String) obj[3], // programaTecnico
+                        (String) obj[4]  // horario
+                ))
+                .toList();
     }
 }
