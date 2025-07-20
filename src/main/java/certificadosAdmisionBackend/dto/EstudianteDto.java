@@ -12,6 +12,7 @@ public class EstudianteDto {
     private String codigo;
     private String email;
     private String programaTecnico;
+    private int semestre;
     private String horario;
 
 }

@@ -1,9 +1,10 @@
 package certificadosAdmisionBackend.servicio;
 
-import certificadosAdmisionBackend.dto.EstudianteDto;
+
+import certificadosAdmisionBackend.dto.EstudiantePageResponse;
 
 import java.util.List;
 
 public interface EstudianteService {
-    List<EstudianteDto> obtenerTodosLosEstudiantes();
+    EstudiantePageResponse obtenerTodosLosEstudiantes(int pagina, int tamano);
 }
