@@ -14,5 +14,9 @@ public class EstudianteDto {
     private String programaTecnico;
     private int semestre;
     private String horario;
-
+    private String fechaLiquidacion;
+    private String referencia;
+    private String estadoLiquidacion;
+    private String conceptoFacturacion;
+    private int conceptoId;
 }
