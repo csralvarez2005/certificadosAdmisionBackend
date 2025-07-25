@@ -14,13 +14,16 @@ public class EstudianteDto {
     private String estadoLiquidacion;
     private String conceptoFacturacion;
     private int conceptoId;
+    private String tipoDocumento;
+
 
     public EstudianteDto() {
     }
 
     public EstudianteDto(int id, String estudiante, String codigo, String email, String programaTecnico,
                          int semestre, String horario, String fechaLiquidacion, String referencia,
-                         String estadoLiquidacion, String conceptoFacturacion, int conceptoId) {
+                         String estadoLiquidacion, String conceptoFacturacion, int conceptoId,
+                         String tipoDocumento) {
         this.id = id;
         this.estudiante = estudiante;
         this.codigo = codigo;
@@ -33,6 +36,7 @@ public class EstudianteDto {
         this.estadoLiquidacion = estadoLiquidacion;
         this.conceptoFacturacion = conceptoFacturacion;
         this.conceptoId = conceptoId;
+        this.tipoDocumento = tipoDocumento;
     }
 
     // Getters y Setters
@@ -131,5 +135,13 @@ public class EstudianteDto {
 
     public void setConceptoId(int conceptoId) {
         this.conceptoId = conceptoId;
+    }
+
+    public String getTipoDocumento() {
+        return tipoDocumento;
+    }
+
+    public void setTipoDocumento(String tipoDocumento) {
+        this.tipoDocumento = tipoDocumento;
     }
 }

@@ -11,10 +11,9 @@ import java.util.Optional;
 @Repository
 public class EstudianteRepository {
 
-    @PersistenceContext(unitName = "sqlServer") // 🔥 especificamos la unidad de persistencia
+    @PersistenceContext(unitName = "sqlServer") //  especificamos la unidad de persistencia
     private EntityManager entityManager;
 
-    // ✅ ESTE método debe estar presente
     public Optional<EstudianteDto> buscarPorId(int estudianteId) {
         List<Object[]> resultados = entityManager.createNativeQuery("""
         SELECT 
@@ -29,18 +28,20 @@ public class EstudianteRepository {
             lv.valor AS horario,
             pro.nombre AS programa,
             cf.nombre AS concepto_facturacion,
-            cf.id AS concepto_id
+            cf.id AS concepto_id,
+            lv2.valor AS tipo_documento
         FROM financiero.dbo.estudiante est
         INNER JOIN financiero.dbo.programa pro ON est.id_programa = pro.id
         INNER JOIN lista_valor lv ON est.id_horario = lv.codigo
         INNER JOIN financiero.dbo.liquidacion_concepto lc ON lc.id_estudiante = est.id
         INNER JOIN financiero.dbo.liquidacion_concepto_detalle lcd ON lc.id = lcd.id_liquidacion
         INNER JOIN financiero.dbo.concepto_facturacion cf ON lcd.id_concepto = cf.id
+        INNER JOIN financiero.dbo.lista_valor lv2 ON est.id_tipo_identificacion = lv2.codigo
         WHERE est.id = :estudianteId
         ORDER BY lc.fecha_liquidacion DESC
     """)
                 .setParameter("estudianteId", estudianteId)
-                .setMaxResults(1) // trae solo el último
+                .setMaxResults(1)
                 .getResultList();
 
         if (resultados.isEmpty()) return Optional.empty();
@@ -58,7 +59,8 @@ public class EstudianteRepository {
                 (String) r[2],              // referencia
                 (String) r[3],              // estadoLiquidacion
                 (String) r[10],             // conceptoFacturacion
-                ((Number) r[11]).intValue() // conceptoId
+                ((Number) r[11]).intValue(),// conceptoId
+                (String) r[12]              // tipoDocumento ⬅️ nuevo campo
         );
 
         return Optional.of(dto);
