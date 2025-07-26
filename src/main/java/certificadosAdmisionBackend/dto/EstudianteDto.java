@@ -1,6 +1,8 @@
 package certificadosAdmisionBackend.dto;
 
 
+import java.util.Date;
+
 public class EstudianteDto {
     private int id;
     private String estudiante;
@@ -9,7 +11,7 @@ public class EstudianteDto {
     private String programaTecnico;
     private int semestre;
     private String horario;
-    private String fechaLiquidacion;
+    private Date fechaLiquidacion;
     private String referencia;
     private String estadoLiquidacion;
     private String conceptoFacturacion;
@@ -20,10 +22,7 @@ public class EstudianteDto {
     public EstudianteDto() {
     }
 
-    public EstudianteDto(int id, String estudiante, String codigo, String email, String programaTecnico,
-                         int semestre, String horario, String fechaLiquidacion, String referencia,
-                         String estadoLiquidacion, String conceptoFacturacion, int conceptoId,
-                         String tipoDocumento) {
+    public EstudianteDto(int id, String estudiante, String codigo, String email, String programaTecnico, int semestre, String horario, Date fechaLiquidacion, String referencia, String estadoLiquidacion, String conceptoFacturacion, int conceptoId, String tipoDocumento) {
         this.id = id;
         this.estudiante = estudiante;
         this.codigo = codigo;
@@ -39,7 +38,7 @@ public class EstudianteDto {
         this.tipoDocumento = tipoDocumento;
     }
 
-    // Getters y Setters
+// Getters y Setters
 
     public int getId() {
         return id;
@@ -97,13 +96,7 @@ public class EstudianteDto {
         this.horario = horario;
     }
 
-    public String getFechaLiquidacion() {
-        return fechaLiquidacion;
-    }
 
-    public void setFechaLiquidacion(String fechaLiquidacion) {
-        this.fechaLiquidacion = fechaLiquidacion;
-    }
 
     public String getReferencia() {
         return referencia;
@@ -143,5 +136,13 @@ public class EstudianteDto {
 
     public void setTipoDocumento(String tipoDocumento) {
         this.tipoDocumento = tipoDocumento;
+    }
+
+    public Date getFechaLiquidacion() {
+        return fechaLiquidacion;
+    }
+
+    public void setFechaLiquidacion(Date fechaLiquidacion) {
+        this.fechaLiquidacion = fechaLiquidacion;
     }
 }

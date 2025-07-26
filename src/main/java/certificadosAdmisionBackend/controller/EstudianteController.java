@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,7 +25,7 @@ public class EstudianteController {
         this.estudianteService = estudianteService;
         this.reporteService = reporteService;
     }
-    // NUEVO: Descargar el PDF por ID
+
     @GetMapping("/reporte/{id}")
     public ResponseEntity<byte[]> descargarReportePdf(@PathVariable Long id) {
         Optional<byte[]> contenido = reporteService.obtenerReportePdfPorId(id);
@@ -34,11 +36,25 @@ public class EstudianteController {
                 .body(pdfBytes)
         ).orElseGet(() -> ResponseEntity.notFound().build());
     }
-    // NUEVO: Generar constancia de estudio por ID
+
     @PostMapping("/reporte/constancia-estudio/{id}")
-    public ResponseEntity<String> generarConstanciaEstudio(@PathVariable Integer id) {
+    public ResponseEntity<Map<String, Object>> generarConstanciaEstudio(@PathVariable Integer id) {
         Long idGenerado = reporteService.generarConstanciaEstudioPorId(id);
-        return ResponseEntity.ok("Constancia de estudio generada con ID: " + idGenerado);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Constancia de estudio generada");
+        response.put("id", idGenerado);
+
+        return ResponseEntity.ok(response);
     }
 
+
+    @GetMapping("/listar")
+    public ResponseEntity<EstudiantePageResponse> listarEstudiantes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        EstudiantePageResponse respuesta = estudianteService.listarTodosPaginado(page, size);
+        return ResponseEntity.ok(respuesta);
+    }
 }
