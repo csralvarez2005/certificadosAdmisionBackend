@@ -3,13 +3,14 @@ package certificadosAdmisionBackend.util;
 import certificadosAdmisionBackend.dto.EstudianteDto;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Locale;
-
+@Component
 public class GeneradorConstanciaPdf {
 
     public static byte[] generarPdfConstanciaEstudio(EstudianteDto est) {
@@ -121,6 +122,95 @@ public class GeneradorConstanciaPdf {
 
         } catch (Exception e) {
             throw new RuntimeException("Error generando constancia de estudio", e);
+        }
+    }
+    public static byte[] generarDesdeTexto(String cuerpoTexto) {
+        try {
+            Rectangle pageSize = new Rectangle(612, 792); // Tamaño carta
+            Document document = new Document(pageSize, 50, 50, 160, 100);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            document.open();
+
+            // Fondo
+            String rutaImagen = "src/main/resources/membrete.jpg";
+            Image background = Image.getInstance(new File(rutaImagen).getAbsolutePath());
+            background.setAbsolutePosition(0, 0);
+            background.scaleToFit(pageSize.getWidth(), pageSize.getHeight());
+            writer.getDirectContentUnder().addImage(background);
+
+            // Fuentes
+            Font tituloFont = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD, BaseColor.BLACK);
+            Font subtituloFont = new Font(Font.FontFamily.TIMES_ROMAN, 11, Font.NORMAL, BaseColor.BLACK);
+            Font cuerpoFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.NORMAL, BaseColor.BLACK);
+            Font encabezadoFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD, BaseColor.BLACK);
+            Font correoFontAzul = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.NORMAL, BaseColor.BLUE);
+
+            // Título
+            Paragraph titulo = new Paragraph(
+                    "EL SUSCRITO COORDINADOR DE LA FUNDACION INTERNACIONAL DE EDUCACION ELYON YIREH",
+                    tituloFont
+            );
+            titulo.setAlignment(Element.ALIGN_CENTER);
+            document.add(titulo);
+
+            // Subtítulo
+            Paragraph subtitulo = new Paragraph(
+                    "Con Licencia de funcionamiento otorgada por la secretaria de educación Distrital de Cartagena\n" +
+                            "con resolución N°. 5749 del 20 de septiembre de 2022\n\n",
+                    subtituloFont
+            );
+            subtitulo.setAlignment(Element.ALIGN_CENTER);
+            subtitulo.setSpacingAfter(20f);
+            document.add(subtitulo);
+
+            // Encabezado
+            Paragraph encabezado = new Paragraph("HACE CONSTAR\n", encabezadoFont);
+            encabezado.setAlignment(Element.ALIGN_CENTER);
+            document.add(encabezado);
+
+            // Cuerpo personalizado
+            Paragraph cuerpo = new Paragraph(cuerpoTexto, cuerpoFont);
+            cuerpo.setAlignment(Element.ALIGN_JUSTIFIED);
+            cuerpo.setSpacingBefore(10f);
+            document.add(cuerpo);
+
+            // Pie de página
+            Paragraph pie = new Paragraph();
+            pie.setFont(cuerpoFont);
+            pie.setSpacingBefore(30f);
+            pie.setAlignment(Element.ALIGN_LEFT);
+
+            LocalDate fechaActual = LocalDate.now();
+            int dia = fechaActual.getDayOfMonth();
+            String diaTexto = convertirNumeroATexto(dia);
+            String mesTexto = fechaActual.getMonth().getDisplayName(TextStyle.FULL, new Locale("es", "ES"));
+            int anio = fechaActual.getYear();
+
+            String fraseFecha = String.format(
+                    "Para constancia se firma y sella en Cartagena de Indias a los %s (%d) días del mes de %s de %d.\n\n",
+                    diaTexto,
+                    dia,
+                    mesTexto,
+                    anio
+            );
+
+            pie.add(fraseFecha);
+            pie.add("Atentamente,\n\n\n\n");
+            pie.add("_________________________\n");
+            pie.add("LIBIA MARCY LAVERDE ROJAS\n");
+            pie.add("COORDINACION ACADEMICA\n");
+
+            Chunk correo = new Chunk("E-MAIL academica@elyonyireh.edu.co", correoFontAzul);
+            pie.add(correo);
+
+            document.add(pie);
+
+            document.close();
+            return baos.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generando constancia personalizada", e);
         }
     }
 
