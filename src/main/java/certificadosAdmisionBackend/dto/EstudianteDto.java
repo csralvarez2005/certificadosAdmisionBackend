@@ -17,12 +17,19 @@ public class EstudianteDto {
     private String conceptoFacturacion;
     private int conceptoId;
     private String tipoDocumento;
+    private Integer nivel;
+    private String asignatura;
+    private Double nota1;
+    private Double nota2;
+    private Double nota3;
+    private Double notaDefinitiva;
+    private String lugarExpedicionDocumento;
 
 
     public EstudianteDto() {
     }
 
-    public EstudianteDto(int id, String estudiante, String codigo, String email, String programaTecnico, int semestre, String horario, Date fechaLiquidacion, String referencia, String estadoLiquidacion, String conceptoFacturacion, int conceptoId, String tipoDocumento) {
+    public EstudianteDto(int id, String estudiante, String codigo, String email, String programaTecnico, int semestre, String horario, Date fechaLiquidacion, String referencia, String estadoLiquidacion, String conceptoFacturacion, int conceptoId, String tipoDocumento, Integer nivel, String asignatura, Double nota1, Double nota2, Double nota3, Double notaDefinitiva, String lugarExpedicionDocumento) {
         this.id = id;
         this.estudiante = estudiante;
         this.codigo = codigo;
@@ -36,9 +43,14 @@ public class EstudianteDto {
         this.conceptoFacturacion = conceptoFacturacion;
         this.conceptoId = conceptoId;
         this.tipoDocumento = tipoDocumento;
+        this.nivel = nivel;
+        this.asignatura = asignatura;
+        this.nota1 = nota1;
+        this.nota2 = nota2;
+        this.nota3 = nota3;
+        this.notaDefinitiva = notaDefinitiva;
+        this.lugarExpedicionDocumento = lugarExpedicionDocumento;
     }
-
-// Getters y Setters
 
     public int getId() {
         return id;
@@ -96,7 +108,13 @@ public class EstudianteDto {
         this.horario = horario;
     }
 
+    public Date getFechaLiquidacion() {
+        return fechaLiquidacion;
+    }
 
+    public void setFechaLiquidacion(Date fechaLiquidacion) {
+        this.fechaLiquidacion = fechaLiquidacion;
+    }
 
     public String getReferencia() {
         return referencia;
@@ -138,11 +156,59 @@ public class EstudianteDto {
         this.tipoDocumento = tipoDocumento;
     }
 
-    public Date getFechaLiquidacion() {
-        return fechaLiquidacion;
+    public Integer getNivel() {
+        return nivel;
     }
 
-    public void setFechaLiquidacion(Date fechaLiquidacion) {
-        this.fechaLiquidacion = fechaLiquidacion;
+    public void setNivel(Integer nivel) {
+        this.nivel = nivel;
+    }
+
+    public String getAsignatura() {
+        return asignatura;
+    }
+
+    public void setAsignatura(String asignatura) {
+        this.asignatura = asignatura;
+    }
+
+    public Double getNota1() {
+        return nota1;
+    }
+
+    public void setNota1(Double nota1) {
+        this.nota1 = nota1;
+    }
+
+    public Double getNota2() {
+        return nota2;
+    }
+
+    public void setNota2(Double nota2) {
+        this.nota2 = nota2;
+    }
+
+    public Double getNota3() {
+        return nota3;
+    }
+
+    public void setNota3(Double nota3) {
+        this.nota3 = nota3;
+    }
+
+    public Double getNotaDefinitiva() {
+        return notaDefinitiva;
+    }
+
+    public void setNotaDefinitiva(Double notaDefinitiva) {
+        this.notaDefinitiva = notaDefinitiva;
+    }
+
+    public String getLugarExpedicionDocumento() {
+        return lugarExpedicionDocumento;
+    }
+
+    public void setLugarExpedicionDocumento(String lugarExpedicionDocumento) {
+        this.lugarExpedicionDocumento = lugarExpedicionDocumento;
     }
 }

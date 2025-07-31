@@ -34,6 +34,7 @@ public class EstudianteController {
         this.generadorConstanciaPdf = generadorConstanciaPdf;
     }
 
+    // ✅ 1. Descargar PDF desde base de datos por ID (GET)
     @GetMapping("/reporte/{id}")
     public ResponseEntity<byte[]> descargarReportePdf(@PathVariable Long id) {
         Optional<byte[]> contenido = reporteService.obtenerReportePdfPorId(id);
@@ -45,6 +46,7 @@ public class EstudianteController {
         ).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // ✅ 2. Generar constancia de estudio y guardar en base de datos (POST)
     @PostMapping("/reporte/constancia-estudio/{id}")
     public ResponseEntity<Map<String, Object>> generarConstanciaEstudio(@PathVariable Integer id) {
         Long idGenerado = reporteService.generarConstanciaEstudioPorId(id);
@@ -54,6 +56,20 @@ public class EstudianteController {
         return ResponseEntity.ok(response);
     }
 
+    // ✅ 3. Generar constancia de notas y guardar en base de datos (POST)
+    @PostMapping("/reporte/constancia-notas/{id}")
+    public ResponseEntity<Map<String, Object>> generarConstanciaNotas(
+            @PathVariable Integer id,
+            @RequestParam Integer nivel
+    ) {
+        Long idGenerado = reporteService.generarConstanciaNotasPorIdYNivel(id, nivel);
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Constancia de notas generada");
+        response.put("id", idGenerado);
+        return ResponseEntity.ok(response);
+    }
+
+    // ✅ 4. Generar constancia personalizada (sin guardar en BD) (POST)
     @PostMapping("/reporte/constancia-estudio/personalizada")
     public ResponseEntity<byte[]> generarConstanciaPersonalizada(
             @RequestParam Integer id,
@@ -66,6 +82,7 @@ public class EstudianteController {
                 .body(pdf);
     }
 
+    // ✅ 5. Listar estudiantes paginados (GET)
     @GetMapping("/listar")
     public ResponseEntity<EstudiantePageResponse> listarEstudiantes(
             @RequestParam(defaultValue = "0") int page,
