@@ -57,12 +57,13 @@ public class EstudianteController {
     }
 
     // ✅ 3. Generar constancia de notas y guardar en base de datos (POST)
-    @PostMapping("/reporte/constancia-notas/{id}")
+    // ✅ 3. Generar constancia de notas y guardar en base de datos (POST)
+    @PostMapping("/reporte/constancia-notas/{codigo}")
     public ResponseEntity<Map<String, Object>> generarConstanciaNotas(
-            @PathVariable Integer id,
+            @PathVariable String codigo,
             @RequestParam Integer nivel
     ) {
-        Long idGenerado = reporteService.generarConstanciaNotasPorIdYNivel(id, nivel);
+        Long idGenerado = reporteService.generarConstanciaNotasPorCodigoYNivel(codigo, nivel);
         Map<String, Object> response = new HashMap<>();
         response.put("mensaje", "Constancia de notas generada");
         response.put("id", idGenerado);
@@ -90,5 +91,17 @@ public class EstudianteController {
     ) {
         EstudiantePageResponse respuesta = estudianteService.listarTodosPaginado(page, size);
         return ResponseEntity.ok(respuesta);
+    }
+    @PostMapping("/reporte/constancia-notas/personalizada")
+    public ResponseEntity<byte[]> generarConstanciaNotasPersonalizada(
+            @RequestParam Integer id,
+            @RequestParam Integer nivel,
+            @RequestBody CertificadoRequest req
+    ) {
+        byte[] pdf = generadorConstanciaPdf.generarDesdeTexto(req.getCuerpo());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificado_notas.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }

@@ -3,26 +3,31 @@ package certificadosAdmisionBackend.servicio.impl;
 import certificadosAdmisionBackend.dto.EstudianteDto;
 import certificadosAdmisionBackend.model.postgres.ReportePdf;
 import certificadosAdmisionBackend.repository.postgres.ReportePdfRepository;
+import certificadosAdmisionBackend.repository.sqlserver.EstudianteNotasRepository;
 import certificadosAdmisionBackend.repository.sqlserver.EstudianteRepository;
 import certificadosAdmisionBackend.servicio.ReporteService;
 import certificadosAdmisionBackend.util.GeneradorConstanciaNotasPdf;
 import certificadosAdmisionBackend.util.GeneradorConstanciaPdf;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ReporteServiceImpl implements ReporteService {
 
     private final EstudianteRepository estudianteRepository;
+    private final EstudianteNotasRepository estudianteNotasRepository; // ✅ Declaración agregada
     private final ReportePdfRepository reportePdfRepository;
 
     public ReporteServiceImpl(EstudianteRepository estudianteRepository,
+                              EstudianteNotasRepository estudianteNotasRepository, // ✅ Constructor actualizado
                               ReportePdfRepository reportePdfRepository) {
         this.estudianteRepository = estudianteRepository;
+        this.estudianteNotasRepository = estudianteNotasRepository;
         this.reportePdfRepository = reportePdfRepository;
     }
 
@@ -50,26 +55,31 @@ public class ReporteServiceImpl implements ReporteService {
     }
 
     @Override
-    public Long generarConstanciaNotasPorIdYNivel(Integer idEstudiante, Integer nivel) {
-        List<EstudianteDto> todasLasNotas = estudianteRepository.buscarNotasPorEstudiante(idEstudiante);
+    @Transactional("transactionManager")
+    public Long generarConstanciaNotasPorCodigoYNivel(String codigoEstudiante, Integer nivel) {
+        // ✅ Cambiado a estudianteNotasRepository
+        List<EstudianteDto> todasLasNotas = estudianteNotasRepository.buscarNotasPorEstudiante(codigoEstudiante);
 
-        // Filtrar notas por nivel deseado
-        List<EstudianteDto> notasFiltradas = todasLasNotas.stream()
-                .filter(n -> n.getNivel() != null && n.getNivel().equals(nivel))
-                .distinct() // opcional, pero útil para eliminar duplicados
-                .collect(Collectors.toList());
+        if (todasLasNotas.isEmpty()) {
+            throw new RuntimeException("El estudiante con código " + codigoEstudiante + " no tiene ninguna nota registrada.");
+        }
 
-        byte[] pdf = GeneradorConstanciaNotasPdf.generarPdfConstanciaNotas(notasFiltradas, nivel);
+        boolean hayNotasNivel = todasLasNotas.stream()
+                .anyMatch(n -> Objects.equals(n.getNivel(), nivel));
 
-        // Guardar el PDF como ReportePdf (como ya lo haces)
+        if (!hayNotasNivel) {
+            throw new IllegalArgumentException("No hay notas para el nivel " + nivel + " del estudiante con código " + codigoEstudiante);
+        }
+
+        byte[] pdf = GeneradorConstanciaNotasPdf.generarPdfConstanciaNotas(todasLasNotas, nivel);
+
         ReportePdf reporte = new ReportePdf();
-        reporte.setNombreReporte("Constancia de notas - Nivel " + nivel);
+        reporte.setNombreReporte("constancia_notas_" + codigoEstudiante + "_nivel" + nivel);
         reporte.setFecha(LocalDateTime.now());
-        reporte.setArchivoPdf(pdf);  // pdf generado como byte[]
-        reporte = reportePdfRepository.save(reporte);
+        reporte.setArchivoPdf(pdf);
 
+        reportePdfRepository.save(reporte);
         return reporte.getId();
     }
-
-
 }
+

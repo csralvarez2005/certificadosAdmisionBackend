@@ -23,7 +23,7 @@ public class GeneradorConstanciaNotasPdf {
     public static byte[] generarPdfConstanciaNotas(List<EstudianteDto> todasLasNotas, int nivelDeseado) {
         try {
             Rectangle pageSize = new Rectangle(612, 792);
-            Document document = new Document(pageSize, 50, 50, 160, 100);
+            Document document = new Document(pageSize, 50, 50, 90, 100);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PdfWriter writer = PdfWriter.getInstance(document, baos);
             document.open();
@@ -65,17 +65,17 @@ public class GeneradorConstanciaNotasPdf {
     }
 
     private static Font[] inicializarFuentes() {
-        Font cuerpoFont = FontFactory.getFont(FontFactory.HELVETICA, 11);
+        Font cuerpoFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
         Font negritaFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
-        Font encabezadoFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+        Font encabezadoFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
         Font filaFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
         return new Font[]{cuerpoFont, negritaFont, encabezadoFont, headerFont, filaFont};
     }
 
     private static List<EstudianteDto> filtrarNotasPorNivel(List<EstudianteDto> todasLasNotas, int nivelDeseado) {
         return todasLasNotas.stream()
-                .filter(n -> n.getNivel() != null && n.getNivel() == nivelDeseado)
+                .filter(n -> Objects.equals(n.getNivel(), nivelDeseado))
                 .collect(Collectors.toList());
     }
 
@@ -256,7 +256,14 @@ public class GeneradorConstanciaNotasPdf {
                 "\nPara constancia se firma y sella en Cartagena de Indias a los %s (%d) días del mes de %s de %d",
                 convertirNumeroATexto(dia), dia, mes, anio
         ));
+
+        pie.add("\n\nAtentamente,\n\n");
+        pie.add("_______________________________\n");
+        pie.add("LIBIA MARCY LAVERDE ROJAS\n");
+        pie.add("COORDINACION ACADEMICA\n");
+        pie.add("E-MAIL academica@elyonyireh.edu.co\n");
         return pie;
+
     }
 
     private static String convertirNumeroATexto(int numero) {
