@@ -221,7 +221,7 @@ public class GeneradorConstanciaNotasPdf {
     }
 
     // Método auxiliar para convertir entero a número romano
-    private static String convertirNivelARomano(Integer nivel) {
+    public static String convertirNivelARomano(Integer nivel) {
         return switch (nivel) {
             case 1 -> "PERIODO-I";
             case 2 -> "PERIODO-II";

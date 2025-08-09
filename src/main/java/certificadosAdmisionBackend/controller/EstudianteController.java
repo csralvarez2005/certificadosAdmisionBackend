@@ -1,6 +1,7 @@
 package certificadosAdmisionBackend.controller;
 
 import certificadosAdmisionBackend.dto.CertificadoRequest;
+import certificadosAdmisionBackend.dto.EstudianteDto;
 import certificadosAdmisionBackend.dto.EstudiantePageResponse;
 import certificadosAdmisionBackend.servicio.EstudianteService;
 import certificadosAdmisionBackend.servicio.ReporteService;
@@ -10,10 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import static certificadosAdmisionBackend.util.GeneradorConstanciaNotasPdf.convertirNivelARomano;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/estudiantes")
@@ -104,4 +107,59 @@ public class EstudianteController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
+
+
+    public static List<Map<String, Object>> generarTablaNotasJson(List<EstudianteDto> notas, int nivelDeseado) {
+        List<Map<String, Object>> tabla = new ArrayList<>();
+        Set<String> modulosUnicos = new LinkedHashSet<>();
+
+        List<EstudianteDto> modulosFiltrados = notas.stream()
+                .filter(n -> Objects.equals(n.getNivel(), nivelDeseado))
+                .filter(n -> n.getAsignatura() != null && n.getNotaDefinitiva() != null)
+                .filter(n -> modulosUnicos.add(n.getAsignatura().trim() + "|" + n.getNotaDefinitiva()))
+                .toList();
+
+        String periodo = modulosFiltrados.isEmpty() || modulosFiltrados.get(0).getNivel() == null
+                ? ""
+                : convertirNivelARomano(modulosFiltrados.get(0).getNivel());
+
+        for (EstudianteDto dto : modulosFiltrados) {
+            Map<String, Object> fila = new HashMap<>();
+            fila.put("periodo", periodo); // Solo envía en la primera fila si quieres
+            fila.put("modulo", dto.getAsignatura());
+            fila.put("nota", dto.getNotaDefinitiva());
+            tabla.add(fila);
+        }
+
+        // Agregar fila PROMEDIO
+        double promedio = modulosFiltrados.stream()
+                .mapToDouble(EstudianteDto::getNotaDefinitiva)
+                .average()
+                .orElse(0.0);
+        Map<String, Object> promedioFila = new HashMap<>();
+        promedioFila.put("modulo", "PROMEDIO");
+        promedioFila.put("nota", BigDecimal.valueOf(promedio).setScale(2, RoundingMode.HALF_UP).toPlainString());
+        promedioFila.put("periodo", "");  // celda vacía
+        tabla.add(promedioFila);
+
+        return tabla;
+    }
+
+    @GetMapping("/notas/tabla/{codigo}")
+    public ResponseEntity<List<Map<String, Object>>> generarTablaNotas(
+            @PathVariable String codigo,
+            @RequestParam int nivel
+    ) {
+        List<EstudianteDto> notas = estudianteService.obtenerNotasPorCodigo(codigo);
+        List<Map<String, Object>> tabla = generarTablaNotasJson(notas, nivel);
+        return ResponseEntity.ok(tabla);
+    }
+    @GetMapping("/notas/{codigo}")
+    public ResponseEntity<List<EstudianteDto>> obtenerNotasPorCodigo(@PathVariable String codigo) {
+        List<EstudianteDto> notas = estudianteService.obtenerNotasPorCodigo(codigo);
+        return ResponseEntity.ok(notas);
+    }
+
+
+
 }

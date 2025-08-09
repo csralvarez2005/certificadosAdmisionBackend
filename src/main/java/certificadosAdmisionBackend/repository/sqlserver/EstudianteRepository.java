@@ -62,7 +62,7 @@ public class EstudianteRepository {
         List<Object[]> resultados = entityManager.createNativeQuery("""
             SELECT 
                 est.id,
-                FORMAT(lc.fecha_liquidacion, 'dd/MM/yyyy') AS fecha_liquidacion,
+                FORMAT(lc.fecha_liquidacion, 'dd/MM/yyyy') AS fecha_liquidacion,                
                 lc.referencia,
                 lc.estado_liquidacion,
                 CONCAT(est.nombre_estudiante, ' ', est.apellido_estudiante) AS estudiante,
