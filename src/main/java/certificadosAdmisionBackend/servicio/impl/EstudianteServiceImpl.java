@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -63,6 +64,23 @@ public class EstudianteServiceImpl implements EstudianteService {
         System.out.println("Notas después de filtrar duplicados: " + filtradas.size());
 
         return filtradas;
+    }
+
+    @Override
+    public List<EstudianteDto> obtenerNotasPorIdYNivel(Long id, int nivel) {
+        // obtener codigo del estudiante
+        EstudianteDto est = estudianteRepository.buscarPorId(id.intValue())
+                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado id=" + id));
+
+        List<EstudianteDto> todas = estudianteNotasRepository.buscarNotasPorEstudiante(est.getCodigo());
+
+        // filtrar por nivel y eliminar duplicados por (asignatura|notaDefinitiva)
+        Set<String> vistos = new LinkedHashSet<>();
+        return todas.stream()
+                .filter(n -> Objects.equals(n.getNivel(), nivel))
+                .filter(n -> n.getAsignatura() != null && n.getNotaDefinitiva() != null)
+                .filter(n -> vistos.add(n.getAsignatura().trim().toUpperCase() + "|" + n.getNotaDefinitiva()))
+                .toList();
     }
 
 

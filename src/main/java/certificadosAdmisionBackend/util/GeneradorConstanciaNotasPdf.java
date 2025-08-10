@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public class GeneradorConstanciaNotasPdf {
 
-    public static byte[] generarPdfConstanciaNotas(List<EstudianteDto> todasLasNotas, int nivelDeseado) {
+    public static byte[] generarPdfConstanciaNotas(List<EstudianteDto> todasLasNotas, int nivelDeseado, String cuerpoPersonalizado,String infoPrograma) {
         try {
             Rectangle pageSize = new Rectangle(612, 792);
             Document document = new Document(pageSize, 50, 50, 90, 100);
@@ -43,9 +43,9 @@ public class GeneradorConstanciaNotasPdf {
             document.add(crearTitulo(fuentes[2]));
             document.add(crearSubtitulo(fuentes[0]));
             document.add(crearEncabezadoCertificaQue(fuentes[1]));
-            document.add(crearCuerpo(est, fuentes[0], fuentes[1]));
+            document.add(crearCuerpo(est, fuentes[0], fuentes[1], cuerpoPersonalizado));
             document.add(crearTablaNotas(notasFiltradas, nivelDeseado, fuentes[3], fuentes[4]));
-            document.add(crearInformacionAdicional(fuentes[0]));
+            document.add(crearInformacionAdicional(fuentes[0], infoPrograma));
             document.add(crearPieDePagina(fuentes[0]));
 
             document.close();
@@ -101,25 +101,37 @@ public class GeneradorConstanciaNotasPdf {
         return cert;
     }
 
-    private static Paragraph crearCuerpo(EstudianteDto est, Font cuerpoFont, Font negritaFont) {
+    private static Paragraph crearCuerpo(
+            EstudianteDto est,
+            Font cuerpoFont,
+            Font negritaFont,
+            String cuerpoPersonalizado
+    ) {
         Paragraph cuerpo = new Paragraph();
         cuerpo.setFont(cuerpoFont);
         cuerpo.setAlignment(Element.ALIGN_JUSTIFIED);
         cuerpo.setSpacingBefore(10f);
 
-        Chunk nombreEstudiante = new Chunk(est.getEstudiante().toUpperCase(), negritaFont);
-        String documento = est.getTipoDocumento().toUpperCase() + " " + est.getCodigo().toUpperCase();
-        Chunk documentoChunk = new Chunk(documento, negritaFont);
+        if (cuerpoPersonalizado != null && !cuerpoPersonalizado.isBlank()) {
+            // Usar el texto personalizado que el usuario escribió en el modal
+            cuerpo.add(cuerpoPersonalizado);
+            cuerpo.add("\n\n");
+        } else {
+            // Texto por defecto si el usuario no escribió nada
+            Chunk nombreEstudiante = new Chunk(est.getEstudiante().toUpperCase(), negritaFont);
+            String documento = est.getTipoDocumento().toUpperCase() + " " + est.getCodigo().toUpperCase();
+            Chunk documentoChunk = new Chunk(documento, negritaFont);
 
-        cuerpo.add("Que ");
-        cuerpo.add(nombreEstudiante);
-        cuerpo.add(", identificado con ");
-        cuerpo.add(documentoChunk);
-        cuerpo.add(" de " + est.getLugarExpedicionDocumento() + ", cursó y aprobó satisfactoriamente el ciclo (semestre) " + est.getSemestre());
-        cuerpo.add(" en esta institución en el programa Técnico Laboral por Competencias en ");
-        cuerpo.add(new Chunk(est.getProgramaTecnico().toUpperCase(), negritaFont));
-        cuerpo.add(", en la modalidad " + est.getHorario().toLowerCase() + " jornada " + est.getHorario().toLowerCase());
-        cuerpo.add(" periodo B 2025. Donde obtuvo las siguientes notas:\n\n");
+            cuerpo.add("Que ");
+            cuerpo.add(nombreEstudiante);
+            cuerpo.add(", identificado con ");
+            cuerpo.add(documentoChunk);
+            cuerpo.add(" de " + est.getLugarExpedicionDocumento() + ", cursó y aprobó satisfactoriamente el ciclo (semestre) " + est.getSemestre());
+            cuerpo.add(" en esta institución en el programa Técnico Laboral por Competencias en ");
+            cuerpo.add(new Chunk(est.getProgramaTecnico().toUpperCase(), negritaFont));
+            cuerpo.add(", en la modalidad " + est.getHorario().toLowerCase() + " jornada " + est.getHorario().toLowerCase());
+            cuerpo.add(" periodo B 2025. Donde obtuvo las siguientes notas:\n\n");
+        }
 
         return cuerpo;
     }
@@ -231,13 +243,19 @@ public class GeneradorConstanciaNotasPdf {
         };
     }
 
-    private static Paragraph crearInformacionAdicional(Font cuerpoFont) {
+    private static Paragraph crearInformacionAdicional(Font cuerpoFont, String infoPrograma) {
         Paragraph info = new Paragraph();
         info.setFont(cuerpoFont);
         info.setSpacingBefore(10f);
-        info.add("\nDuración de programa: 2 años\n");
-        info.add("Intensidad horaria del programa: 1.358 horas\n");
-        info.add("Intensidad horaria del programa: 24 horas semanales\n");
+
+        if (infoPrograma != null && !infoPrograma.isBlank()) {
+            info.add(infoPrograma); // Usa el texto que viene del frontend
+        } else {
+            info.add("\nDuración de programa: 2 años\n");
+            info.add("Intensidad horaria del programa: 1.358 horas\n");
+            info.add("Intensidad horaria del programa: 24 horas semanales\n");
+        }
+
         return info;
     }
 

@@ -19,6 +19,76 @@ public class EstudianteRepository {
     @PersistenceContext(unitName = "sqlServer")
     private EntityManager entityManager;
 
+
+    public List<EstudianteDto> buscarNotasPorIdYNivel(Long id, int nivel) {
+        List<Object[]> resultados = entityManager.createNativeQuery("""
+        SELECT 
+            est.id,
+            FORMAT(lc.fecha_liquidacion, 'dd/MM/yyyy') AS fecha_liquidacion,
+            lc.referencia,
+            lc.estado_liquidacion,
+            CONCAT(est.nombre_estudiante, ' ', est.apellido_estudiante) AS estudiante,
+            est.codigo,
+            est.email,
+            est.semestre,
+            lv.valor AS horario,
+            pro.nombre AS programa,
+            cf.nombre AS concepto_facturacion,
+            cf.id AS concepto_id,
+            lv2.valor AS tipo_documento,
+            mat.id_nivel AS nivel,
+            modu.nombre AS asignatura,
+            mat.nota1,
+            mat.nota2,
+            mat.nota3,
+            mat.nota_definitiva,
+            est.nombre_lugar_expedicion_documento
+        FROM financiero.dbo.estudiante est
+        INNER JOIN financiero.dbo.programa pro ON est.id_programa = pro.id
+        INNER JOIN lista_valor lv ON est.id_horario = lv.codigo
+        INNER JOIN financiero.dbo.liquidacion_concepto lc ON lc.id_estudiante = est.id
+        INNER JOIN financiero.dbo.liquidacion_concepto_detalle lcd ON lc.id = lcd.id_liquidacion
+        INNER JOIN financiero.dbo.concepto_facturacion cf ON lcd.id_concepto = cf.id
+        INNER JOIN financiero.dbo.lista_valor lv2 ON est.id_tipo_identificacion = lv2.codigo
+        INNER JOIN matricula.dbo.matricula_academica mat ON mat.id_estudiante = est.id
+        INNER JOIN matricula.dbo.modulo modu ON modu.id = mat.id_modulo
+        WHERE est.id = :id
+          AND mat.id_nivel = :nivel
+        ORDER BY modu.nombre
+    """)
+                .setParameter("id", id)
+                .setParameter("nivel", nivel)
+                .getResultList();
+
+        return resultados.stream()
+                .map(this::mapearAFilaNota)   // adapta mapearAFilaNota al orden de columnas
+                .toList();
+    }
+    private EstudianteDto mapearAFilaNota(Object[] r) {
+        return new EstudianteDto(
+                ((Number) r[0]).intValue(),  // id
+                (String) r[1],               // estudiante
+                (String) r[2],               // codigo
+                (String) r[3],               // email
+                (String) r[4],               // programa
+                ((Number) r[5]).intValue(),  // semestre
+                (String) r[6],               // horario
+                parsearFecha((String) r[7]), // fecha_liquidacion
+                (String) r[8],               // referencia
+                (String) r[9],               // estado_liquidacion
+                (String) r[10],              // concepto_facturacion
+                ((Number) r[11]).intValue(), // concepto_id
+                (String) r[12],              // tipo_documento
+                ((Number) r[13]).intValue(), // nivel
+                (String) r[14],              // asignatura
+                (r[15] != null) ? ((Number) r[15]).doubleValue() : null, // nota1
+                (r[16] != null) ? ((Number) r[16]).doubleValue() : null, // nota2
+                (r[17] != null) ? ((Number) r[17]).doubleValue() : null, // nota3
+                (r[18] != null) ? ((Number) r[18]).doubleValue() : null, // nota_definitiva
+                (String) r[19]               // lugar_exp_documento
+        );
+    }
+
     public Optional<EstudianteDto> buscarPorId(Integer estudianteId) {
         List<Object[]> resultados = entityManager.createNativeQuery("""
         SELECT 

@@ -5,6 +5,7 @@ import certificadosAdmisionBackend.dto.EstudianteDto;
 import certificadosAdmisionBackend.dto.EstudiantePageResponse;
 import certificadosAdmisionBackend.servicio.EstudianteService;
 import certificadosAdmisionBackend.servicio.ReporteService;
+import certificadosAdmisionBackend.util.GeneradorConstanciaNotasPdf;
 import certificadosAdmisionBackend.util.GeneradorConstanciaPdf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -64,9 +65,12 @@ public class EstudianteController {
     @PostMapping("/reporte/constancia-notas/{codigo}")
     public ResponseEntity<Map<String, Object>> generarConstanciaNotas(
             @PathVariable String codigo,
-            @RequestParam Integer nivel
+            @RequestParam Integer nivel,
+            @RequestParam String cuerpo,
+            @RequestParam String infoPrograma             // ✅ Nuevo parámetro
     ) {
-        Long idGenerado = reporteService.generarConstanciaNotasPorCodigoYNivel(codigo, nivel);
+        Long idGenerado = reporteService.generarConstanciaNotasPorCodigoYNivel(codigo, nivel, cuerpo,infoPrograma);
+
         Map<String, Object> response = new HashMap<>();
         response.put("mensaje", "Constancia de notas generada");
         response.put("id", idGenerado);
@@ -160,6 +164,27 @@ public class EstudianteController {
         return ResponseEntity.ok(notas);
     }
 
+    @GetMapping("/constancia-notas")
+    public ResponseEntity<byte[]> generarConstanciaNotas(
+            @RequestParam Long id,
+            @RequestParam int nivel,
+            @RequestParam String cuerpo,
+            @RequestParam String infoPrograma
+    ) {
+        List<EstudianteDto> notas = estudianteService.obtenerNotasPorIdYNivel(id, nivel);
 
+        // Generar el PDF con cuerpo y infoPrograma
+        byte[] pdfBytes = GeneradorConstanciaNotasPdf.generarPdfConstanciaNotas(
+                notas,
+                nivel,
+                cuerpo,
+                infoPrograma
+        );
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificado_notas.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
 
 }

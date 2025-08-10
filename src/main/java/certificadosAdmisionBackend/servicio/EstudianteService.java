@@ -8,5 +8,5 @@ import java.util.List;
 public interface EstudianteService {
     EstudiantePageResponse listarTodosPaginado(int page, int size);
     List<EstudianteDto> obtenerNotasPorCodigo(String codigo);
-
+    List<EstudianteDto> obtenerNotasPorIdYNivel(Long id, int nivel);
 }

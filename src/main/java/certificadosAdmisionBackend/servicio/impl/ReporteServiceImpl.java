@@ -20,11 +20,11 @@ import java.util.Optional;
 public class ReporteServiceImpl implements ReporteService {
 
     private final EstudianteRepository estudianteRepository;
-    private final EstudianteNotasRepository estudianteNotasRepository; // ✅ Declaración agregada
+    private final EstudianteNotasRepository estudianteNotasRepository;
     private final ReportePdfRepository reportePdfRepository;
 
     public ReporteServiceImpl(EstudianteRepository estudianteRepository,
-                              EstudianteNotasRepository estudianteNotasRepository, // ✅ Constructor actualizado
+                              EstudianteNotasRepository estudianteNotasRepository,
                               ReportePdfRepository reportePdfRepository) {
         this.estudianteRepository = estudianteRepository;
         this.estudianteNotasRepository = estudianteNotasRepository;
@@ -56,8 +56,8 @@ public class ReporteServiceImpl implements ReporteService {
 
     @Override
     @Transactional("transactionManager")
-    public Long generarConstanciaNotasPorCodigoYNivel(String codigoEstudiante, Integer nivel) {
-        // ✅ Cambiado a estudianteNotasRepository
+    public Long generarConstanciaNotasPorCodigoYNivel(String codigoEstudiante, Integer nivel, String cuerpo, String infoPrograma) {
+        // Obtener todas las notas del estudiante
         List<EstudianteDto> todasLasNotas = estudianteNotasRepository.buscarNotasPorEstudiante(codigoEstudiante);
 
         if (todasLasNotas.isEmpty()) {
@@ -71,8 +71,10 @@ public class ReporteServiceImpl implements ReporteService {
             throw new IllegalArgumentException("No hay notas para el nivel " + nivel + " del estudiante con código " + codigoEstudiante);
         }
 
-        byte[] pdf = GeneradorConstanciaNotasPdf.generarPdfConstanciaNotas(todasLasNotas, nivel);
+        // Generar PDF con cuerpo e infoPrograma
+        byte[] pdf = GeneradorConstanciaNotasPdf.generarPdfConstanciaNotas(todasLasNotas, nivel, cuerpo, infoPrograma);
 
+        // Guardar en base de datos
         ReportePdf reporte = new ReportePdf();
         reporte.setNombreReporte("constancia_notas_" + codigoEstudiante + "_nivel" + nivel);
         reporte.setFecha(LocalDateTime.now());
