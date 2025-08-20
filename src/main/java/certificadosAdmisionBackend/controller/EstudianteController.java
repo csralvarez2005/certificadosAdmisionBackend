@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import static certificadosAdmisionBackend.util.GeneradorConstanciaNotasPdf.convertirNivelARomano;
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -61,15 +60,20 @@ public class EstudianteController {
     }
 
     // ✅ 3. Generar constancia de notas y guardar en base de datos (POST)
-    // ✅ 3. Generar constancia de notas y guardar en base de datos (POST)
+    // 🔧 Corregido: "cuerpo" e "infoPrograma" son opcionales
     @PostMapping("/reporte/constancia-notas/{codigo}")
     public ResponseEntity<Map<String, Object>> generarConstanciaNotas(
             @PathVariable String codigo,
             @RequestParam Integer nivel,
-            @RequestParam String cuerpo,
-            @RequestParam String infoPrograma             // ✅ Nuevo parámetro
+            @RequestParam(required = false) String cuerpo,
+            @RequestParam(required = false) String infoPrograma
     ) {
-        Long idGenerado = reporteService.generarConstanciaNotasPorCodigoYNivel(codigo, nivel, cuerpo,infoPrograma);
+        Long idGenerado = reporteService.generarConstanciaNotasPorCodigoYNivel(
+                codigo,
+                nivel,
+                cuerpo != null ? cuerpo : "",
+                infoPrograma != null ? infoPrograma : ""
+        );
 
         Map<String, Object> response = new HashMap<>();
         response.put("mensaje", "Constancia de notas generada");
@@ -99,6 +103,7 @@ public class EstudianteController {
         EstudiantePageResponse respuesta = estudianteService.listarTodosPaginado(page, size);
         return ResponseEntity.ok(respuesta);
     }
+
     @PostMapping("/reporte/constancia-notas/personalizada")
     public ResponseEntity<byte[]> generarConstanciaNotasPersonalizada(
             @RequestParam Integer id,
@@ -111,7 +116,6 @@ public class EstudianteController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
-
 
     public static List<Map<String, Object>> generarTablaNotasJson(List<EstudianteDto> notas, int nivelDeseado) {
         List<Map<String, Object>> tabla = new ArrayList<>();
@@ -129,21 +133,21 @@ public class EstudianteController {
 
         for (EstudianteDto dto : modulosFiltrados) {
             Map<String, Object> fila = new HashMap<>();
-            fila.put("periodo", periodo); // Solo envía en la primera fila si quieres
+            fila.put("periodo", periodo);
             fila.put("modulo", dto.getAsignatura());
             fila.put("nota", dto.getNotaDefinitiva());
             tabla.add(fila);
         }
 
-        // Agregar fila PROMEDIO
         double promedio = modulosFiltrados.stream()
                 .mapToDouble(EstudianteDto::getNotaDefinitiva)
                 .average()
                 .orElse(0.0);
+
         Map<String, Object> promedioFila = new HashMap<>();
         promedioFila.put("modulo", "PROMEDIO");
         promedioFila.put("nota", BigDecimal.valueOf(promedio).setScale(2, RoundingMode.HALF_UP).toPlainString());
-        promedioFila.put("periodo", "");  // celda vacía
+        promedioFila.put("periodo", "");
         tabla.add(promedioFila);
 
         return tabla;
@@ -158,6 +162,7 @@ public class EstudianteController {
         List<Map<String, Object>> tabla = generarTablaNotasJson(notas, nivel);
         return ResponseEntity.ok(tabla);
     }
+
     @GetMapping("/notas/{codigo}")
     public ResponseEntity<List<EstudianteDto>> obtenerNotasPorCodigo(@PathVariable String codigo) {
         List<EstudianteDto> notas = estudianteService.obtenerNotasPorCodigo(codigo);
@@ -173,7 +178,6 @@ public class EstudianteController {
     ) {
         List<EstudianteDto> notas = estudianteService.obtenerNotasPorIdYNivel(id, nivel);
 
-        // Generar el PDF con cuerpo y infoPrograma
         byte[] pdfBytes = GeneradorConstanciaNotasPdf.generarPdfConstanciaNotas(
                 notas,
                 nivel,
@@ -186,5 +190,4 @@ public class EstudianteController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
     }
-
 }
