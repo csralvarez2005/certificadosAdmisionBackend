@@ -8,6 +8,7 @@ import certificadosAdmisionBackend.repository.sqlserver.EstudianteRepository;
 import certificadosAdmisionBackend.servicio.ReporteService;
 import certificadosAdmisionBackend.util.GeneradorConstanciaNotasPdf;
 import certificadosAdmisionBackend.util.GeneradorConstanciaPdf;
+import certificadosAdmisionBackend.util.GeneradorCertificadoBuenaConductaPdf;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +23,16 @@ public class ReporteServiceImpl implements ReporteService {
     private final EstudianteRepository estudianteRepository;
     private final EstudianteNotasRepository estudianteNotasRepository;
     private final ReportePdfRepository reportePdfRepository;
+    private final GeneradorCertificadoBuenaConductaPdf generadorCertificadoBuenaConductaPdf;
 
     public ReporteServiceImpl(EstudianteRepository estudianteRepository,
                               EstudianteNotasRepository estudianteNotasRepository,
-                              ReportePdfRepository reportePdfRepository) {
+                              ReportePdfRepository reportePdfRepository,
+                              GeneradorCertificadoBuenaConductaPdf generadorCertificadoBuenaConductaPdf) {
         this.estudianteRepository = estudianteRepository;
         this.estudianteNotasRepository = estudianteNotasRepository;
         this.reportePdfRepository = reportePdfRepository;
+        this.generadorCertificadoBuenaConductaPdf = generadorCertificadoBuenaConductaPdf;
     }
 
     @Override
@@ -82,6 +86,26 @@ public class ReporteServiceImpl implements ReporteService {
 
         reportePdfRepository.save(reporte);
         return reporte.getId();
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public Long generarCertificadoBuenaConductaPorId(Integer estudianteId) {
+        // Obtener el estudiante por su ID
+        EstudianteDto estudiante = estudianteRepository.buscarPorId(estudianteId)
+                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+
+        // Generar el certificado de buena conducta en PDF
+        byte[] pdfBytes = generadorCertificadoBuenaConductaPdf.generarPdfCertificadoBuenaConducta(estudiante);
+
+        // Crear un objeto ReportePdf y almacenarlo en la base de datos
+        ReportePdf reporte = new ReportePdf();
+        reporte.setNombreReporte("certificado_buena_conducta_" + estudiante.getCodigo());
+        reporte.setFecha(LocalDateTime.now());
+        reporte.setArchivoPdf(pdfBytes);
+
+        reportePdfRepository.save(reporte);
+        return reporte.getId();  // Retorna el ID del reporte generado
     }
 }
 

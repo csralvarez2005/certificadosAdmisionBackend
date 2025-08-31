@@ -60,7 +60,6 @@ public class EstudianteController {
     }
 
     // ✅ 3. Generar constancia de notas y guardar en base de datos (POST)
-    // 🔧 Corregido: "cuerpo" e "infoPrograma" son opcionales
     @PostMapping("/reporte/constancia-notas/{codigo}")
     public ResponseEntity<Map<String, Object>> generarConstanciaNotas(
             @PathVariable String codigo,
@@ -104,6 +103,7 @@ public class EstudianteController {
         return ResponseEntity.ok(respuesta);
     }
 
+    // ✅ 6. Generar constancia de notas personalizada (POST)
     @PostMapping("/reporte/constancia-notas/personalizada")
     public ResponseEntity<byte[]> generarConstanciaNotasPersonalizada(
             @RequestParam Integer id,
@@ -115,6 +115,16 @@ public class EstudianteController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificado_notas.pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    // ✅ 7. Nuevo: Generar Certificado de Buena Conducta (POST)
+    @PostMapping("/reporte/certificado-buena-conducta/{id}")
+    public ResponseEntity<Map<String, Object>> generarCertificadoBuenaConducta(@PathVariable Integer id) {
+        Long idGenerado = reporteService.generarCertificadoBuenaConductaPorId(id);
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Certificado de buena conducta generado");
+        response.put("id", idGenerado);
+        return ResponseEntity.ok(response);
     }
 
     public static List<Map<String, Object>> generarTablaNotasJson(List<EstudianteDto> notas, int nivelDeseado) {
